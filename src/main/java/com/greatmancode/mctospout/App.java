@@ -1,3 +1,30 @@
+/*
+ * This file is part of mctospout.
+ *
+ * Copyright (c) 2011-2012,
+ * 							Greatman <http://github.com/greatman/>
+ * mctospout is licensed under the SpoutDev License Version 1.
+ *
+ * mctospout is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * In addition, 180 days after any changes are published, you can use the
+ * software, incorporating those changes, under the terms of the MIT license,
+ * as described in the SpoutDev License Version 1.
+ *
+ * mctospout is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License,
+ * the MIT license and the SpoutDev License Version 1 along with this program.
+ * If not, see <http://www.gnu.org/licenses/> for the GNU Lesser General Public
+ * License and see <http://www.spout.org/SpoutDevLicenseV1.txt> for the full license,
+ * including the MIT license.
+ */
 package com.greatmancode.mctospout;
 
 import java.io.DataOutputStream;
@@ -24,27 +51,31 @@ import org.spout.nbt.StringTag;
 import org.spout.nbt.stream.NBTInputStream;
 import org.spout.nbt.stream.NBTOutputStream;
 
+import com.greatmancode.mctospout.util.FileFilter;
+
 /**
  * Hello world!
  * 
  */
 public class App {
 	private static World world;
-	private static File worldFolder;
 	private static File spoutFolder;
 	public static void main(String[] args) {
-		worldFolder = new File(args[0]);
+		File worldFolder = new File(args[0]);
 		if (worldFolder.exists() && worldFolder.isDirectory()) {
 
 			// START level.dat checkup & World initialization
 			System.out.println("Reading level.dat file....");
-			if (readLevelDatMc()) {
+			if (readLevelDatMc(worldFolder)) {
 				if (world != null) { // Just a check to be sure
 					System.out.println("World " + world.getName() + " loaded!");
 					if (createWorldDatSpout()) {
 						System.out.println("Spout world.dat created!");
+						if (convertToSpout()) {
+							
+						}
+						
 					}
-					
 				}
 			}
 		} else {
@@ -53,7 +84,7 @@ public class App {
 	}
 
 	//STEP 1
-	public static boolean readLevelDatMc() {
+	public static boolean readLevelDatMc(File worldFolder) {
 		boolean result = false;
 		File worldInformation = new File(worldFolder, "level.dat");
 		if (worldInformation.exists() && worldInformation.isFile()) {
@@ -73,7 +104,7 @@ public class App {
 				CompoundMap dataTag = (CompoundMap) level.get("Data").getValue();
 				if (((IntTag) dataTag.get("version")).getValue().equals(19133)) {
 					sendUpdate();
-					world = new World(((StringTag) dataTag.get("LevelName")).getValue(), ((StringTag) dataTag.get("generatorName")).getValue(), ((IntTag)dataTag.get("GameType")).getValue(), ((LongTag) dataTag.get("RandomSeed")).getValue(), ((IntTag) dataTag.get("SpawnX")).getValue(), ((IntTag) dataTag.get("SpawnY")).getValue(), ((IntTag) dataTag.get("SpawnZ")).getValue());
+					world = new World(worldFolder, ((StringTag) dataTag.get("LevelName")).getValue(), ((StringTag) dataTag.get("generatorName")).getValue(), ((IntTag)dataTag.get("GameType")).getValue(), ((LongTag) dataTag.get("RandomSeed")).getValue(), ((IntTag) dataTag.get("SpawnX")).getValue(), ((IntTag) dataTag.get("SpawnY")).getValue(), ((IntTag) dataTag.get("SpawnZ")).getValue());
 					if (world.isValid()) {
 						sendUpdate();
 						result = true;
@@ -134,7 +165,7 @@ public class App {
 		try {
 			
 			//TODO: Fix, doesn't create at the good spot
-			spoutFolder = new File(worldFolder.getParentFile(), "SpoutWorld");
+			spoutFolder = new File(world.getWorldFolder().getParentFile(), "SpoutWorld");
 			spoutFolder.mkdirs();
 			sendUpdate();
 			os = new NBTOutputStream(new DataOutputStream(new FileOutputStream(new File(spoutFolder, "world.dat"))), false);
@@ -151,6 +182,21 @@ public class App {
 			}
 		}
 
+		return result;
+	}
+	
+	public static boolean convertToSpout() {
+		boolean result = false;
+		File regionFolder = new File(world.getWorldFolder(), "region");
+		if (regionFolder.exists() && regionFolder.isDirectory()) {
+			
+			File[] regionFiles = regionFolder.listFiles(new FileFilter(".mca"));
+			for (int i = 0; i < regionFiles.length; i++) {
+			}
+			
+		} else {
+			System.out.println("Region folder doesn't exist!");
+		}
 		return result;
 	}
 	

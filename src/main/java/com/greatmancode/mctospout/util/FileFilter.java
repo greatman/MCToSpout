@@ -25,41 +25,18 @@
  * License and see <http://www.spout.org/SpoutDevLicenseV1.txt> for the full license,
  * including the MIT license.
  */
-package com.greatmancode.mctospout;
+package com.greatmancode.mctospout.util;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.io.File;
+import java.io.FilenameFilter;
 
-/**
- * Unit test for simple App.
- */
-public class AppTest 
-    extends TestCase
-{
-    /**
-     * Create the test case
-     *
-     * @param testName name of the test case
-     */
-    public AppTest( String testName )
-    {
-        super( testName );
-    }
+public class FileFilter implements FilenameFilter {
+  protected String pattern;
+  public FileFilter (String str) {
+    pattern = str;
+  }
 
-    /**
-     * @return the suite of tests being tested
-     */
-    public static Test suite()
-    {
-        return new TestSuite( AppTest.class );
-    }
-
-    /**
-     * Rigourous Test :-)
-     */
-    public void testApp()
-    {
-        assertTrue( true );
-    }
+  public boolean accept(File dir, String name) {
+    return name.toLowerCase().endsWith(pattern.toLowerCase());
+  }
 }
