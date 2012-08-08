@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-import org.apache.commons.collections.map.DefaultedMap;
 import org.spout.api.datatable.DataMap;
 import org.spout.api.datatable.GenericDatatableMap;
 import org.spout.nbt.ByteArrayTag;
@@ -42,7 +41,9 @@ public class App {
 			if (readLevelDatMc()) {
 				if (world != null) { // Just a check to be sure
 					System.out.println("World " + world.getName() + " loaded!");
-					createWorldDatSpout();
+					if (createWorldDatSpout()) {
+						System.out.println("Spout world.dat created!");
+					}
 					
 				}
 			}
@@ -54,11 +55,11 @@ public class App {
 	//STEP 1
 	public static boolean readLevelDatMc() {
 		boolean result = false;
-		File worldInformation = new File(worldFolder, "world.dat");
+		File worldInformation = new File(worldFolder, "level.dat");
 		if (worldInformation.exists() && worldInformation.isFile()) {
 			CompoundTag data = null;
 			try {
-				NBTInputStream in = new NBTInputStream(new FileInputStream(worldInformation), false);
+				NBTInputStream in = new NBTInputStream(new FileInputStream(worldInformation));
 				data = (CompoundTag) in.readTag();
 				in.close();
 			} catch (IOException e) {
@@ -67,7 +68,6 @@ public class App {
 			}
 			HashMap<String, Tag> level = new HashMap<String, Tag>();
 			level.putAll(data.getValue());
-			System.out.println(level);
 			if (level.containsKey("Data")) {
 				sendUpdate();
 				CompoundMap dataTag = (CompoundMap) level.get("Data").getValue();
@@ -132,7 +132,9 @@ public class App {
 		//Let's create the new folder
 		NBTOutputStream os = null;
 		try {
-			spoutFolder = new File(worldFolder.getParent(), world.getName());
+			
+			//TODO: Fix, doesn't create at the good spot
+			spoutFolder = new File(worldFolder.getParentFile(), "SpoutWorld");
 			spoutFolder.mkdirs();
 			sendUpdate();
 			os = new NBTOutputStream(new DataOutputStream(new FileOutputStream(new File(spoutFolder, "world.dat"))), false);
